@@ -24,7 +24,7 @@ from arches.app.models import models
 from arches.app.models.resource import Resource
 from arches.app.models.tile import Tile
 from arches.app.models.system_settings import settings
-from arches.app.utils.response import JSONResponse
+from arches.app.utils.response import JSONResponse, JSONErrorResponse
 from arches.app.utils.betterJSONSerializer import JSONSerializer, JSONDeserializer
 from arches.app.utils.decorators import can_edit_resource_instance
 from arches.app.views.tileserver import clean_resource_cache
@@ -83,7 +83,7 @@ class TileData(View):
                         old_tile = Tile.objects.get(pk=tile_id)
                         clean_resource_cache(old_tile)
                     except ObjectDoesNotExist:
-                        return JSONResponse({'status':'false','message': [_('This tile is no longer available'), _('It was likely deleted by another user')]}, status=500)
+                        return JSONErrorResponse(_('This tile is no longer available'), _('It was likely deleted by another user'))
                 tile = Tile(data)
                 if tile.filter_by_perm(request.user, 'write_nodegroup'):
                     with transaction.atomic():
@@ -112,7 +112,7 @@ class TileData(View):
                                 tile.data = tile.provisionaledits[str(request.user.id)]['value']
 
                         except ValidationError as e:
-                            return JSONResponse({'status':'false','message':e.args}, status=500)
+                            return JSONErrorResponse(_('A validation error occurred'), e.args)
                         except Exception as e:
                             exception_title = 'Saving tile failed'
                             exception_message = str(e)
@@ -122,15 +122,14 @@ class TileData(View):
                             logger.error(exception_title + ' [Tile id: {tile_id}] [Exception message: {message}] [Exception trace: {trace}]'
                                          .format(tile_id=tile_id, message=exception_message, trace=traceback.format_exc()))
                             
-                            return JSONResponse({'status': 'false', 'message':
-                                                 [_(exception_title), _(str(exception_message))]}, status=500)
+                            return JSONErrorResponse(_(exception_title), _(str(exception_message)))
                         tile.after_update_all()
                         clean_resource_cache(tile)
                         update_system_settings_cache(tile)
 
                     return JSONResponse(tile)
                 else:
-                    return JSONResponse({'status':'false','message': [_('Request Failed'), _('Permission Denied')]}, status=500)
+                    return JSONErrorResponse(_('Request Failed'), _('Permission Denied'))
 
         if self.action == 'reorder_tiles':
             json = request.body
@@ -181,7 +180,7 @@ class TileData(View):
                 try:
                     tile = Tile.objects.get(tileid = data['tileid'])
                 except ObjectDoesNotExist:
-                    return JSONResponse({'status':'false','message': [_('This tile is no longer available'), _('It was likely already deleted by another user')]}, status=500)
+                    return JSONErrorResponse(_('This tile is no longer available'), _('It was likely already deleted by another user'))
                 user_is_reviewer = request.user.groups.filter(name='Resource Reviewer').exists()
                 if user_is_reviewer or tile.is_provisional() == True:
                     if tile.filter_by_perm(request.user, 'delete_nodegroup'):
@@ -199,9 +198,9 @@ class TileData(View):
                         update_system_settings_cache(tile)
                         return JSONResponse(tile)
                     else:
-                        return JSONResponse({'status':'false','message': [_('Request Failed'), _('Permission Denied')]}, status=500)
+                        return JSONErrorResponse(_('Request Failed'), _('Permission Denied'))
                 else:
-                    return JSONResponse({'status':'false','message': [_('Request Failed'), _('You do not have permissions to delete a tile with authoritative data.')]}, status=500)
+                    return JSONErrorResponse(_('Request Failed'), _('You do not have permissions to delete a tile with authoritative data.'))
 
         return HttpResponseNotFound()
 
