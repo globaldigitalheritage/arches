@@ -33,7 +33,7 @@ from arches.app.models.concept import Concept
 from arches.app.models.graph import Graph
 from arches.app.models.system_settings import settings
 from arches.app.utils.pagination import get_paginator
-from arches.app.utils.response import JSONResponse
+from arches.app.utils.response import JSONResponse, JSONErrorResponse
 from arches.app.utils.betterJSONSerializer import JSONSerializer, JSONDeserializer
 from arches.app.utils.date_utils import ExtendedDateFormat
 from arches.app.search.search_engine_factory import SearchEngineFactory
@@ -211,7 +211,7 @@ def search_results(request):
     try:
         search_results_dsl = build_search_results_dsl(request)
     except Exception as err:
-        return JSONResponse(err.message, status=500)
+        return JSONErrorResponse(message=err.message)
 
     dsl = search_results_dsl['query']
     search_buffer = search_results_dsl['search_buffer']
