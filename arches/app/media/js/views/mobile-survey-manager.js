@@ -4,11 +4,12 @@ define([
     'views/base-manager',
     'viewmodels/mobile-survey-manager',
     'viewmodels/alert',
+    'viewmodels/alert-json',
     'models/mobile-survey',
     'mobile-survey-manager-data',
     'arches',
     'bindings/datepicker'
-], function(_, ko, BaseManagerView, MobileSurveyManagerViewModel, AlertViewModel, MobileSurveyModel, data, arches) {
+], function(_, ko, BaseManagerView, MobileSurveyManagerViewModel, AlertViewModel, JsonErrorAlertViewModel, MobileSurveyModel, data, arches) {
 
     var viewModel = new MobileSurveyManagerViewModel(data);
 
@@ -22,7 +23,7 @@ define([
                     self.mobilesurveys.push(self.selectedMobileSurvey());
                 }
             } else {
-                pageView.viewModel.alert(new AlertViewModel('ep-alert-red', data.responseJSON.title, data.responseJSON.message));
+                pageView.viewModel.alert(new JsonErrorAlertViewModel('ep-alert-red', data.responseJSON));
             }
             self.loading(false);
         })
@@ -74,7 +75,7 @@ define([
                                 self.selectedMobileSurvey(undefined);
                             }
                         } else {
-                            pageView.viewModel.alert(new AlertViewModel('ep-alert-red', data.responseJSON.title, data.responseJSON.message));
+                            pageView.viewModel.alert(new JsonErrorAlertViewModel('ep-alert-red', data.responseJSON));
                         }
                         self.loading(false);
                     });

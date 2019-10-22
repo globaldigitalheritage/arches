@@ -3,13 +3,13 @@ require([
     'knockout',
     'views/graph/graph-page-view',
     'views/list',
-    'viewmodels/alert',
+    'viewmodels/alert-json',
     'models/report',
     'models/graph',
     'report-manager-data',
     'arches',
     'bindings/dragDrop'
-], function(_, ko, PageView, ListView, AlertViewModel, ReportModel, GraphModel, data, arches) {
+], function(_, ko, PageView, ListView, JsonErrorAlertViewModel, ReportModel, GraphModel, data, arches) {
     var showTemplateLibrary = ko.observable(false);
 
     var reportModels = [];
@@ -43,8 +43,8 @@ require([
         items: viewModel.templates
     });
 
-    var alertFailure = function() {
-        pageView.viewModel.alert(new AlertViewModel('ep-alert-red', arches.requestFailed.title, arches.requestFailed.text));
+    var alertFailure = function(responseJSON) {
+        pageView.viewModel.alert(new JsonErrorAlertViewModel('ep-alert-red', responseJSON));
     };
 
     viewModel.addReport = function(newReportData){

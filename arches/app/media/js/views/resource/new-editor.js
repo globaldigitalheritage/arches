@@ -5,6 +5,7 @@ define([
     'moment',
     'views/base-manager',
     'viewmodels/alert',
+    'viewmodels/alert-json',
     'models/graph',
     'models/report',
     'viewmodels/card',
@@ -18,7 +19,7 @@ define([
     'bindings/sortable',
     'widgets',
     'card-components'
-], function($, _, ko, moment, BaseManagerView, AlertViewModel, GraphModel, ReportModel, CardViewModel, ProvisionalTileViewModel, arches, data, searchResults, RelatedResourcesManager, reportLookup) {
+], function($, _, ko, moment, BaseManagerView, AlertViewModel, JsonErrorAlertViewModel, GraphModel, ReportModel, CardViewModel, ProvisionalTileViewModel, arches, data, searchResults, RelatedResourcesManager, reportLookup) {
     var handlers = {
         'after-update': [],
         'tile-reset': []
@@ -210,7 +211,7 @@ define([
                         type: "DELETE",
                         url: arches.urls.resource_editor + resourceId(),
                         error: function(err) {
-                            vm.alert(new AlertViewModel('ep-alert-red', err.responseJSON.title, err.responseJSON.message, null, function(){}));
+                            vm.alert(new JsonErrorAlertViewModel('ep-alert-red', err.responseJSON));
                         },
                         complete: function(request, status) {
                             loading(false);
@@ -224,12 +225,12 @@ define([
         },
         deleteTile: function(tile) {
             tile.deleteTile(function(response) {
-                vm.alert(new AlertViewModel('ep-alert-red', response.responseJSON.message[0], response.responseJSON.message[1], null, function(){}));
+                vm.alert(new JsonErrorAlertViewModel('ep-alert-red', response.responseJSON));
             });
         },
         saveTile: function(tile) {
             tile.save(function(response) {
-                vm.alert(new AlertViewModel('ep-alert-red', response.responseJSON.message[0], response.responseJSON.message[1], null, function(){}));
+                vm.alert(new JsonErrorAlertViewModel('ep-alert-red', response.responseJSON));
             });
         },
         viewEditHistory: function() {
